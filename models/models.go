@@ -6,9 +6,13 @@ import (
 
 
 type User struct {
-	Id       int `orm:"pk;auto"`
-	Username string
-	Password string
+	Id       int `orm:"pk;auto" json:"id"`
+	Username string `json:"username"`
+	Password string `json:"p,omitempty"`
+}
+
+func (this *User) GetPassword() string {
+	return this.Password;
 }
 
 func init() {

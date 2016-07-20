@@ -22,39 +22,31 @@ type UserController struct {
 	beego.Controller
 }
 
-func (this *UserController) Get() {
-	username := this.GetString("username")
-
-	user, err := GetUser(username)
-	if err != nil {
-		this.Ctx.WriteString("no user named " + username)
-		return
-	}
-
-	this.Data["json"] = user
-	this.ServeJSON()
-}
-
-func (this *UserController) Post() {
+/**
+ * api
+ */
+func (this *UserController) Login() {
 	username := this.GetString("username")
 	password := this.GetString("password")
 
-	user, err := GetUser(username)
+	user, err := auth(username, password)
 	if err != nil {
-		this.Ctx.WriteString("no user named " + username)
+		this.Ctx.ResponseWriter.Status = 401
+		this.Ctx.WriteString("auth failed" + username)
 		return
 	}
 
-	if password == user.Password {
-		this.Ctx.WriteString(fmt.Sprintf("Login Success: %s", username))
-	} else {
-		this.Ctx.WriteString(fmt.Sprintf("Incorrect Password: %s", password))
-	}
+	this.Data["json"] = user;
+	this.ServeJSON();
 }
 
-func GetUser(username string) (*models.User, error) {
+/**
+ * 内部函数
+ */
+func auth(username string, password string) (*models.User, error) {
 	user := new(models.User)
-	err := initDB().QueryTable("user").Filter("username", username).One(user);
+	err := initDB().QueryTable("user").Filter("username", username).Filter("password", password).One(user);
+	user.Password = ""
 	return user, err
 }
 
@@ -67,11 +59,11 @@ func initDB() orm.Ormer {
 }
 
 func TestGetUser() {
-	user, err := GetUser("linyun")
+	user, err := auth("linyun", "aaa")
 	if err != nil {
 		print(err.Error());
 	} else {
-		print(user.Password)
+		print(user.GetPassword())
 	}
 }
 
