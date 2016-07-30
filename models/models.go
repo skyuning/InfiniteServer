@@ -5,7 +5,24 @@ import (
 )
 
 func init() {
-	orm.RegisterModel(new(User), new(Object));
+	orm.RegisterModel(
+		new(User),
+		new(Goods),
+		new(GoodsType),
+	);
+	ormer := GetOrmer()
+	orm.RunSyncdb("default", false, true)
+
+	// 衣
+	ormer.Insert(&GoodsType{Name:"衣服"})
+	// 食
+	ormer.Insert(&GoodsType{Name:"食物"})
+	// 住
+	ormer.Insert(&GoodsType{Name:"帐篷"})
+	// 行
+	ormer.Insert(&GoodsType{Name:"野象"})
+
+	orm.RunSyncdb("default", false, true)
 }
 
 type SimpleResponse struct {
@@ -18,13 +35,19 @@ type User struct {
 	Username string `json:"username"`
 	Password string `json:"-"`
 	Avatar   string `json:"avatar"`
-	Objects []*Object `orm:"reverse(many)" json:"object,omitempty"`
+	Goods    []*Goods `orm:"reverse(many)" json:"objects"`
 }
 
-type Object struct {
-	Id   int `orm:"pk;auto" json:"id"`
-	Name string `json:"name"`
+type GoodsType struct {
+	Id      int `orm:"pk;uniqu;auto" json:"id"`
+	Name    string `orm:"unique" json:"name"`
+	Objects []*Goods `orm:"reverse(many)" json:"objects,omitempty"`
+}
+type Goods struct {
+	Id     int `orm:"pk;auto" json:"id"`
+	Name   string `orm:"unique;null"`
 	Amount int `json:"amount"`
-	User *User `orm:"rel(fk);null;on_delete(do_nothing)" json:"-"`
+	Type   *GoodsType `orm:"rel(fk)" json:"type"`
+	User   *User `orm:"rel(fk);null;on_delete(do_nothing)" json:"-"`
 }
 

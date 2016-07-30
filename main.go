@@ -6,6 +6,8 @@ import (
 )
 
 func main() {
+	beego.SetLevel(beego.LevelDebug)
+	beego.SetLogger("console", "")
 	//	controllers.TestGetUser()
 	beego.Run()
 }
